@@ -110,8 +110,15 @@ class MongoengineConnectionField(ConnectionField):
         if self._type._meta.filter_fields:
             for field, filter_collection in self._type._meta.filter_fields.items():
                 for each in filter_collection:
+                    filter_type = getattr(
+                        graphene, str(self._type._meta.fields[field].type).replace("!", ""))
+
+                    # Handle special where argument should be a list
+                    if each == 'in':
+                        filter_type = graphene.List(filter_type)
+
                     filter_args[field + "__" + each] = graphene.Argument(
-                        type=getattr(graphene, str(self._type._meta.fields[field].type).replace("!", "")))
+                        type=filter_type)
 
         return filter_args
 
